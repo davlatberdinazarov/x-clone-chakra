@@ -1,0 +1,25 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import { Inter } from "next/font/google";
+import { Provider } from "@/components/ui/provider";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Twitter X",
+  description: "Twitter X is a Twitter clone built with Next.js and MongoDB.",
+  icons: { icon: "/images/x.svg" },
+};
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html suppressHydrationWarning>
+      <body className={inter.className}>
+        <Provider>{children}</Provider>
+      </body>
+    </html>
+  );
+}
