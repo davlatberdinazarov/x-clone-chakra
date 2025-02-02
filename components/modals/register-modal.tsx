@@ -7,6 +7,8 @@ import Modal from "../ui/modal";
 import { Input, Stack } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import Button from "../ui/button";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function RegisterModal() {
   const [step, setStep] = useState(1);
@@ -72,6 +74,9 @@ function RegisterStep1({
   const [errorName, setErrorName] = useState(false);
   const [errorEmail, setErrorEmail] = useState(false);
   const [emailErrorText, setEmailErrorText] = useState("This field is required");
+  const [isLoading, setIsLoading] = useState(false);
+
+  let router = useRouter();
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -91,8 +96,17 @@ function RegisterStep1({
 
     if (name && email && isValidEmail(email)) {
       setData((prev) => ({ ...prev, name, email }));
+
+      setIsLoading(true);
+
+      setTimeout(() => {
+        setIsLoading(false);
+        router.push("/"); // Bosh sahifaga yo‘naltirish
+      }, 300);
+
       setStep(2);
     }
+    
   };
 
   return (
@@ -123,7 +137,7 @@ function RegisterStep1({
           />
         </Field>
 
-        <Button onClick={onSubmit} fullWidth classNames="bg-white min-h-[40px] text-xl !text-black">
+        <Button onClick={onSubmit} isLoading={isLoading} disabled={isLoading} fullWidth classNames="bg-white min-h-[40px] text-xl !text-black">
           Next
         </Button>
       </Stack>
@@ -141,6 +155,7 @@ function RegisterStep2({
   const [errorUsername, setErrorUsername] = useState(false);
   const [errorPassword, setErrorPassword] = useState(false);
   const [passwordErrorText, setPasswordErrorText] = useState("This field is required");
+  const [isLoading, setIsLoading] = useState(false);
 
   const isValidPassword = (password: string) => password.length >= 6;
 
@@ -155,8 +170,12 @@ function RegisterStep2({
     }
 
     if (username && password && isValidPassword(password)) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
       setData((prev) => ({ ...prev, username, password }));
-      alert("Registration completed!");
+      useAuthStore().register();
     }
   };
 
@@ -189,7 +208,7 @@ function RegisterStep2({
           />
         </Field>
 
-        <Button onClick={onSubmit} fullWidth classNames="bg-white min-h-[40px] text-xl !text-black">
+        <Button onClick={onSubmit} isLoading={isLoading} disabled={isLoading} fullWidth classNames="bg-white min-h-[40px] text-xl !text-black">
           Register
         </Button>
       </Stack>

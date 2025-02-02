@@ -1,11 +1,19 @@
+"use client";
+
 import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import useLoginModal from "@/hooks/useLoginModal";
+import useRegisterModal from "@/hooks/useRegisterModal";
 import Modal from "../ui/modal";
 import { Input, Stack, Text } from "@chakra-ui/react";
 import Button from "../ui/button";
-import useRegisterModal from "@/hooks/useRegisterModal";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function LoginModal() {
+  const router = useRouter();
+  const loginModal = useLoginModal();
+  const registerModal = useRegisterModal();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorEmail, setErrorEmail] = useState(false);
@@ -16,24 +24,23 @@ export default function LoginModal() {
   const [passwordErrorText, setPasswordErrorText] = useState(
     "This field is required"
   );
-
-
-//   modal switching
-const loginModal = useLoginModal();
-const registerModal = useRegisterModal();
-
-const onToggle = useCallback(() => {
-  loginModal.onClose();
-  setTimeout(() => {
-	registerModal.onOpen();
-  }, 300); // 300ms kutish
-}, [loginModal, registerModal]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidPassword = (password: string) => password.length >= 6;
 
+  const onToggle = useCallback(() => {
+    loginModal.onClose();
+    setTimeout(() => {
+      registerModal.onOpen();
+    }, 300);
+  }, [loginModal, registerModal]);
+
   const onSubmit = () => {
+    setErrorEmail(false);
+    setErrorPassword(false);
+
     if (!email) {
       setErrorEmail(true);
       setEmailErrorText("This field is required");
@@ -51,9 +58,20 @@ const onToggle = useCallback(() => {
     }
 
     if (email && isValidEmail(email) && password && isValidPassword(password)) {
-      alert("Login successful!"); // Bu joyda API chaqirishingiz mumkin
-      loginModal.onClose();
+      setIsLoading(true);
+
+      setTimeout(() => {
+        setIsLoading(false);
+        loginModal.onClose();
+        router.push("/"); // Bosh sahifaga yo‘naltirish
+      }, 300);
+      // Login funksiyasini to'g'ri chaqirish
+      useAuthStore.getState().login(); // To'g'ri ishlash uchun useAuthStore.getState() orqali chaqirish
     }
+
+    // clearInput
+    setEmail("");
+    setPassword("");
   };
 
   const bodyContent = (
@@ -66,7 +84,9 @@ const onToggle = useCallback(() => {
         }}
         size="2xl"
         placeholder="Email"
-		className={`${ errorEmail ? 'border-red-600' : 'border-gray-800' } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
+        className={`${
+          errorEmail ? "border-red-600" : "border-gray-800"
+        } focus-within:border-blue-600 px-4 text-lg border-[1px]`}
       />
       {errorEmail && (
         <Text color="red.500" fontSize="sm">
@@ -83,7 +103,9 @@ const onToggle = useCallback(() => {
         }}
         size="2xl"
         placeholder="Password"
-		className={`${ errorPassword ? 'border-red-600' : 'border-gray-800' } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
+        className={`${
+          errorPassword ? "border-red-600" : "border-gray-800"
+        } focus-within:border-blue-600 px-4 text-lg border-[1px]`}
       />
       {errorPassword && (
         <Text color="red.500" fontSize="sm">
@@ -91,7 +113,13 @@ const onToggle = useCallback(() => {
         </Text>
       )}
 
-      <Button onClick={onSubmit} classNames="text-xl" fullWidth>
+      <Button
+        classNames="text-xl"
+        onClick={onSubmit}
+        fullWidth
+        isLoading={isLoading}
+        disabled={isLoading}
+      >
         Login
       </Button>
     </Stack>
@@ -105,7 +133,6 @@ const onToggle = useCallback(() => {
           className="text-white cursor-pointer hover:underline"
           onClick={onToggle}
         >
-          {" "}
           Create an account
         </span>
       </p>
@@ -117,7 +144,7 @@ const onToggle = useCallback(() => {
       isOpen={loginModal.isOpen}
       onClose={loginModal.onClose}
       body={bodyContent}
-	  footer={footer}
+      footer={footer}
     />
   );
 }
