@@ -8,7 +8,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  isUserLoggedIn: true,
+  isUserLoggedIn: false,
   login: () => set({ isUserLoggedIn: true }),
   logout: () => set({ isUserLoggedIn: false }),
   register: () => set({ isUserLoggedIn: true }), // Registering the user will also set logged in state to true

@@ -1,18 +1,20 @@
-"use client"
+// ❌ "use client" bo‘lishi mumkin emas!
 import Auth from "@/components/auth";
 import React from "react";
 import NextTopLoader from "nextjs-toploader";
-import { useAuthStore } from "@/store/auth.store";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 
 interface Props {
   children: React.ReactNode;
 }
 
-const Layout = ({ children }: Props) => {
-  const isUserLogin = useAuthStore((state) => state.isUserLoggedIn);
+const Layout = async ({ children }: Props) => {
+  const session: any = await getServerSession(authOptions);
 
-  if (!isUserLogin) {
+  console.log("Session:", session);
+
+  if (!session) {
     return (
       <div className="container h-screen mx-auto max-w-7xl">
         <Auth />
@@ -21,7 +23,7 @@ const Layout = ({ children }: Props) => {
   }
 
   return (
-    <div className="lg:container h-screen mx-auto lg:max-w-7xl">
+    <div suppressHydrationWarning className="lg:container h-screen mx-auto lg:max-w-7xl">
       <div className="flex">
         {/* <Sidebar user={JSON.parse(JSON.stringify(session.currentUser))} /> */}
         <div className="flex flex-1 border-x-[1px] border-neutral-800 lg:mx-4 ml-1">

@@ -8,15 +8,16 @@ import { Input, Stack } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import Button from "../ui/button";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
+import { signIn } from "next-auth/react";  // NextAuth.js import
+import { registerUser } from "@/app/api/auth/register";
 
 export default function RegisterModal() {
   const [step, setStep] = useState(1);
   const [data, setData] = useState({
-    name: '',
-    email: '',
-    username: '',
-    password: ''
+    name: "",
+    email: "",
+    username: "",
+    password: "",
   });
 
   const registerModal = useRegisterModal();
@@ -33,7 +34,7 @@ export default function RegisterModal() {
     step === 1 ? (
       <RegisterStep1 setData={setData} setStep={setStep} />
     ) : (
-      <RegisterStep2 setData={setData} />
+      <RegisterStep2 data={data} />
     );
 
   const footer = (
@@ -67,13 +68,22 @@ function RegisterStep1({
   setData,
 }: {
   setStep: Dispatch<SetStateAction<number>>;
-  setData: Dispatch<SetStateAction<{ name: string; email: string; username: string; password: string }>>;
+  setData: Dispatch<
+    SetStateAction<{
+      name: string;
+      email: string;
+      username: string;
+      password: string;
+    }>
+  >;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [errorName, setErrorName] = useState(false);
   const [errorEmail, setErrorEmail] = useState(false);
-  const [emailErrorText, setEmailErrorText] = useState("This field is required");
+  const [emailErrorText, setEmailErrorText] = useState(
+    "This field is required"
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   let router = useRouter();
@@ -82,7 +92,7 @@ function RegisterStep1({
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!name) {
       setErrorName(true);
     }
@@ -95,18 +105,26 @@ function RegisterStep1({
     }
 
     if (name && email && isValidEmail(email)) {
+      let formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("step", "1"); // 1-qadamni ko'rsatish
+
+      const response = await registerUser(formData);
+
+      if (!response.success) {
+        setErrorEmail(true);
+        setEmailErrorText(response.message || "Email is already registered");
+        return;
+      }
+
       setData((prev) => ({ ...prev, name, email }));
-
       setIsLoading(true);
-
       setTimeout(() => {
         setIsLoading(false);
-        router.push("/"); // Bosh sahifaga yo‘naltirish
+        setStep(2); // Qadamni o'zgartirish
       }, 300);
-
-      setStep(2);
     }
-    
   };
 
   return (
@@ -121,7 +139,9 @@ function RegisterStep1({
             }}
             size="2xl"
             placeholder="Name"
-            className={`${ errorName ? 'border-red-600' : 'border-gray-800' } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
+            className={`${
+              errorName ? "border-red-600" : "border-gray-800"
+            } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
           />
         </Field>
         <Field invalid={errorEmail} errorText={emailErrorText}>
@@ -133,11 +153,19 @@ function RegisterStep1({
             }}
             size="2xl"
             placeholder="Email"
-            className={`${ errorEmail ? 'border-red-600' : 'border-gray-800' } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
+            className={`${
+              errorEmail ? "border-red-600" : "border-gray-800"
+            } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
           />
         </Field>
 
-        <Button onClick={onSubmit} isLoading={isLoading} disabled={isLoading} fullWidth classNames="bg-white min-h-[40px] text-xl !text-black">
+        <Button
+          onClick={onSubmit}
+          isLoading={isLoading}
+          disabled={isLoading}
+          fullWidth
+          classNames="bg-white min-h-[40px] text-xl !text-black"
+        >
           Next
         </Button>
       </Stack>
@@ -145,43 +173,86 @@ function RegisterStep1({
   );
 }
 
-function RegisterStep2({
-  setData,
-}: {
-  setData: Dispatch<SetStateAction<{ name: string; email: string; username: string; password: string }>>;
-}) {
+function RegisterStep2({ data }: { data: { name: string; email: string } }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorUsername, setErrorUsername] = useState(false);
   const [errorPassword, setErrorPassword] = useState(false);
-  const [passwordErrorText, setPasswordErrorText] = useState("This field is required");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [passwordErrorText, setPasswordErrorText] = useState(
+    "This field is required"
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const isValidPassword = (password: string) => password.length >= 6;
 
-  const onSubmit = () => {
-    if (!username) setErrorUsername(true);
+
+
+  const onSubmit = async () => {
+    setErrorUsername(!username);
+    setErrorPassword(!password);
+  
     if (!password) {
-      setErrorPassword(true);
       setPasswordErrorText("This field is required");
     } else if (!isValidPassword(password)) {
       setErrorPassword(true);
       setPasswordErrorText("Password must be at least 6 characters");
+      return;
     }
-
+  
     if (username && password && isValidPassword(password)) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 300);
-      setData((prev) => ({ ...prev, username, password }));
-      useAuthStore().register();
+      setIsLoading(true); // LOADING START
+  
+      try {
+        const formData = new FormData();
+        formData.append("name", data.name);
+        formData.append("email", data.email);
+        formData.append("username", username);
+        formData.append("password", password);
+        formData.append("step", "2");
+  
+        const response = await registerUser(formData);
+  
+        if (!response.success) {
+          setErrorMessage(response.message || "Registration failed");
+          console.log(response.message);
+          return;
+        }
+  
+        console.log("Registration successful", response);
+  
+        // Foydalanuvchini NextAuth bilan tizimga kirgizish
+        const signInResponse = await signIn("credentials", {
+          redirect: false,
+          name: data.name,
+          email: data.email,
+          username: username,
+          password: password,
+        });
+  
+        if (signInResponse?.error) {
+          setErrorMessage("Failed to log in after registration.");
+          console.log(signInResponse.error);
+        } else {
+          // Successful login
+          location.reload(); // Reload the page after successful registration and login
+        }
+      } catch (error) {
+        console.error("Registration error:", error);
+        setErrorMessage("Something went wrong");
+      } finally {
+        setIsLoading(false); // LOADING END
+      }
     }
   };
+  
+  
 
   return (
     <div>
       <Stack gap={4} className="form-control">
+        {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+
         <Field invalid={errorUsername} errorText="This field is required">
           <Input
             value={username}
@@ -191,9 +262,12 @@ function RegisterStep2({
             }}
             size="2xl"
             placeholder="Username"
-            className={`${ errorUsername ? 'border-red-600' : 'border-gray-800' } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
+            className={`${
+              errorUsername ? "border-red-600" : "border-gray-800"
+            } focus-within:border-blue-600 px-4 text-lg border-[1px]`}
           />
         </Field>
+
         <Field invalid={errorPassword} errorText={passwordErrorText}>
           <Input
             type="password"
@@ -204,12 +278,20 @@ function RegisterStep2({
             }}
             size="2xl"
             placeholder="Password"
-            className={`${ errorPassword ? 'border-red-600' : 'border-gray-800' } focus-within:border-blue-600 px-4 text-lg  border-[1px]`}
+            className={`${
+              errorPassword ? "border-red-600" : "border-gray-800"
+            } focus-within:border-blue-600 px-4 text-lg border-[1px]`}
           />
         </Field>
 
-        <Button onClick={onSubmit} isLoading={isLoading} disabled={isLoading} fullWidth classNames="bg-white min-h-[40px] text-xl !text-black">
-          Register
+        <Button
+          onClick={onSubmit}
+          isLoading={isLoading}
+          disabled={isLoading}
+          fullWidth
+          classNames="bg-white min-h-[40px] text-xl !text-black"
+        >
+          {isLoading ? "Registering..." : "Register"}
         </Button>
       </Stack>
     </div>
