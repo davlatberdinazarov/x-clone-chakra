@@ -3,7 +3,6 @@
 import { Button, Box, Text } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useSession, signIn, signOut } from "next-auth/react";
-import Image from "next/image";
 
 const Demo = () => {
   const { toggleColorMode } = useColorMode();

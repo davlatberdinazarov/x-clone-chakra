@@ -1,21 +1,29 @@
 "use client";
 
-import { Button, Input, Text } from "@chakra-ui/react";
 import { Avatar } from "@/components/ui/avatar";
 import {
   PopoverArrow,
   PopoverBody,
   PopoverContent,
   PopoverRoot,
-  PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { signOut } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import React from "react";
 import { RiLogoutCircleLine } from "react-icons/ri";
 import { Loader2, MoreHorizontal } from "lucide-react";
+import { sliceText } from "@/lib/utils";
 
 const SidebarAccount = () => {
+  const { data, status }: any = useSession();
+
+  if (status == "loading")
+    return (
+      <div className="flex items-center justify-center">
+        <Loader2 className="animate-spin text-sky-500" />
+      </div>
+    );
+
   return (
     <>
       {/* MOBIE SIDEBAR ACCOUNT */}
@@ -37,12 +45,17 @@ const SidebarAccount = () => {
           <div className="flex justify-between items-center gap-2">
             <div className="flex gap-1 justify-between items-center">
               <div className=" flex  items-center gap-2">
-                <Avatar>
-                  <p>U</p>
-                </Avatar>
+                <Avatar
+                  name={data?.currentUser?.name[0]}
+                  src={data?.currentUser?.profileImage}
+                />
                 <div className="flex flex-col items-start text-white">
-                  <p>Username</p>
-                  <p className="opacity-40">@userhandle</p>
+                  <p>{data?.currentUser?.name}</p>
+                  {data?.currentUser?.username ? (
+                  <p className="opacity-40">@{sliceText(data?.currentUser?.username, 16)}</p>
+                ) : (
+                  <p className="opacity-40">{sliceText(data?.currentUser?.email, 16)}</p>
+                  )}
                 </div>
               </div>
 
@@ -54,7 +67,7 @@ const SidebarAccount = () => {
           <PopoverArrow />
           <PopoverBody>
             <div
-              className="font-bold text-white cursor-pointer hover:bg-slate-300 hover:bg-opacity-10 p-4 transition"
+              className="font-bold text-white text-lg rounded-xl cursor-pointer hover:bg-slate-300 hover:bg-opacity-10 p-4 transition"
               onClick={() => signOut()}
             >
               Log out @userhandle
