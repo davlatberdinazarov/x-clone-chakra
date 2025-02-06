@@ -35,8 +35,6 @@ export default function Home() {
     fetchPosts();
   }, [postCount]);
 
-  console.log('POSTS', posts)
-
   return (
     <div>
       <Header label="Home" />

@@ -43,7 +43,6 @@ const Page = () => {
     try {
       setIsFetchingComment(true);
       const response = await getPostComments(params.postId);
-      console.log("�� Fetched comments: ", response);
       if (response) {
         if (response.data) {
           setComments(response.data);
@@ -61,8 +60,6 @@ const Page = () => {
     getPost();
     getComments();
   }, []);
-
-  console.log("Commments  ",comments)
 
   return (
     <>

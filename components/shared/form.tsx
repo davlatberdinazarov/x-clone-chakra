@@ -38,7 +38,6 @@ export default function Form({
           return;
         }
         const response = await createComment({ body, postId });
-        console.log('Create Comment post: ',response);
         if (response?.status === 200 && response.data) {
           const newComment = {
             ...response.data,
@@ -47,7 +46,6 @@ export default function Form({
             hasLiked: false,
           };
           setPosts((prev) => { 
-            console.log('Previous posts:', prev); 
             return [newComment, ...prev]
           });
         }

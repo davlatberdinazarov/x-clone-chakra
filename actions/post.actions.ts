@@ -69,9 +69,6 @@ export async function getPosts(limit: number): Promise<IPost[]> {
       )
     ) as IPost[];
 
-    console.log(session?.currentUser?._id);
-    console.log('✅✅ FilteredPosts', filteredPosts);
-
     return filteredPosts
   } catch (error) {
     if (error instanceof Error) {
@@ -146,7 +143,6 @@ export async function getPostComments(
       options: { sort: { likes: -1 } }, // Sort comments by likes (descending)
     });
 
-    console.log("🚀Post", post);
     // If the post doesn't exist
     if (!post) {
       return { error: "Post not found", status: 404 };
@@ -174,10 +170,6 @@ export async function getPostComments(
             _id: item._id,
           }))
         : [];
-
-
-
-    console.log("🚀 FilteredComments", filteredComments);
 
     return {
       success: true,
