@@ -22,3 +22,21 @@ export async function fetchUsers(limit: number) {
     }
   }
 }
+
+export async function searchUsers(query: string) {
+  try {
+    await connectToDatabase();
+
+    const users = await User.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { username: { $regex: query, $options: "i" } },
+        { email: { $regex: query, $options: "i" } },
+      ],
+    }).select("name username _id profileImage email");
+
+    return { status: true, data: users };
+  } catch (error) {
+    return { status: false, error: error instanceof Error ? error.message : "Something went wrong" };
+  }
+}

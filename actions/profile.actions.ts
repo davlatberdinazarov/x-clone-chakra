@@ -67,7 +67,7 @@ export async function getUserPosts(userId: string, limit?: number) {
         email: post.user.email,
       },
       likes: post.likes?.length || 0,
-      comments: post.comments?.length || 0,
+      comments: post.comments || 0,
       hasLiked:
         post.likes?.some(
           (like: any) => like.toString() === session.currentUser?._id.toString()

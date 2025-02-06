@@ -7,6 +7,7 @@ import { IUser } from "@/types";
 import { updateUserProfile } from "@/actions/profile.actions"; // Server Action import
 import { useRouter } from "next/navigation";
 import useEditModal from "@/hooks/useEditModal";
+import { toaster } from "../ui/toaster";
 
 interface Props {
   user: IUser;
@@ -26,7 +27,7 @@ export default function EditForm({ user }: Props) {
     setLoading(true);
     setError(null);
 
-    console.log('ishladi')
+    console.log("ishladi");
 
     try {
       const response = await updateUserProfile({
@@ -36,14 +37,23 @@ export default function EditForm({ user }: Props) {
         location,
         bio,
       });
-      console.log('ishladi', response);
+      console.log("ishladi", response);
       if (!response.status) {
         throw new Error(response.error || "Failed to update profile");
       }
 
+      toaster.create({
+        description: "Profile updated successfully",
+        type: "success",
+      });
+
       router.refresh();
       editModal.onClose();
     } catch (err) {
+      toaster.create({
+        description: "Something went wrong while updating profile",
+        type: "error",
+      });
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
@@ -51,7 +61,7 @@ export default function EditForm({ user }: Props) {
   };
 
   return (
-    <form >
+    <form>
       <Stack gap="4">
         <Field>
           <Input
