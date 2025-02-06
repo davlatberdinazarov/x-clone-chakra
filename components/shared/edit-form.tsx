@@ -22,10 +22,11 @@ export default function EditForm({ user }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
     setError(null);
+
+    console.log('ishladi')
 
     try {
       const response = await updateUserProfile({
@@ -35,7 +36,7 @@ export default function EditForm({ user }: Props) {
         location,
         bio,
       });
-
+      console.log('ishladi', response);
       if (!response.status) {
         throw new Error(response.error || "Failed to update profile");
       }
@@ -50,7 +51,7 @@ export default function EditForm({ user }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form >
       <Stack gap="4">
         <Field>
           <Input
@@ -87,7 +88,7 @@ export default function EditForm({ user }: Props) {
 
         {error && <p className="text-red-500">{error}</p>}
 
-        <Button secondary fullWidth disabled={loading}>
+        <Button onClick={handleSubmit} secondary fullWidth disabled={loading}>
           {loading ? "Updating..." : "Submit"}
         </Button>
       </Stack>

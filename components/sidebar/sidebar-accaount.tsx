@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar } from "@/components/ui/avatar";
 import {
   PopoverArrow,
   PopoverBody,
@@ -13,6 +12,7 @@ import React from "react";
 import { RiLogoutCircleLine } from "react-icons/ri";
 import { Loader2, MoreHorizontal } from "lucide-react";
 import { sliceText } from "@/lib/utils";
+import { Avatar } from "@chakra-ui/react";
 
 const SidebarAccount = () => {
   const { data, status }: any = useSession();
@@ -45,16 +45,21 @@ const SidebarAccount = () => {
           <div className="flex justify-between items-center gap-2">
             <div className="flex gap-1 justify-between items-center">
               <div className=" flex  items-center gap-2">
-                <Avatar
-                  name={data?.currentUser?.name[0]}
-                  src={data?.currentUser?.profileImage}
-                />
+                <Avatar.Root>
+                  <Avatar.Fallback />
+                  <Avatar.Image className="h-full w-full object-cover" src={data?.currentUser?.profileImage} />
+                </Avatar.Root>
+
                 <div className="flex flex-col items-start text-white">
                   <p>{data?.currentUser?.name}</p>
                   {data?.currentUser?.username ? (
-                  <p className="opacity-40">@{sliceText(data?.currentUser?.username, 16)}</p>
-                ) : (
-                  <p className="opacity-40">{sliceText(data?.currentUser?.email, 16)}</p>
+                    <p className="opacity-40">
+                      @{sliceText(data?.currentUser?.username, 16)}
+                    </p>
+                  ) : (
+                    <p className="opacity-40">
+                      {sliceText(data?.currentUser?.email, 16)}
+                    </p>
                   )}
                 </div>
               </div>

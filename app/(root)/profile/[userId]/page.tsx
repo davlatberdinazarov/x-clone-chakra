@@ -10,7 +10,8 @@ import React from "react";
 
 const Page = async ({ params }: { params: { userId: string } }) => {
   const session: any = await getServerSession(authOptions);
-  const user = await getUserById(params.userId);
+  const { userId } = await params; // Await params to ensure it's resolved
+  const user = await getUserById(userId);
 
   return (
     <>
@@ -21,7 +22,7 @@ const Page = async ({ params }: { params: { userId: string } }) => {
         userId={JSON.parse(JSON.stringify(session)).currentUser._id}
       />
       <PostFeed
-        userId={params.userId}
+        userId={userId}
         user={JSON.parse(JSON.stringify(session.currentUser))}
       />
     </>
