@@ -9,11 +9,14 @@ import { formatDistanceToNowStrict } from "date-fns";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { followUser, unfollowUser } from "@/actions/profile.actions";
+import EditModal from "../modals/edit-modal";
+import useEditModal from "@/hooks/useEditModal";
 
 const ProfileBio = ({ user, userId }: { user: IUser; userId: string }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
+  const editModal = useEditModal();
 
   const onFollow = async () => {
     try {
@@ -44,10 +47,13 @@ const ProfileBio = ({ user, userId }: { user: IUser; userId: string }) => {
 
   return (
     <>
+      <EditModal user={user} />
       <div className="border-b-[1px] border-neutral-800 pb-4">
         <div className="flex justify-end p-2">
           {userId === user._id ? (
-            <Button secondary>Edit profile</Button>
+            <Button secondary onClick={() => editModal.onOpen()}>
+              Edit profile
+            </Button>
           ) : user.isFollowing ? (
             <Button outline onClick={onUnfollow} disabled={isLoading}>
               Unfollow

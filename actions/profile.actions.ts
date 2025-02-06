@@ -1,3 +1,4 @@
+
 "use server";
 
 import Post from "@/database/post.model";
@@ -119,5 +120,50 @@ export async function unfollowUser({userId, currentUserId}: {userId: string, cur
     return { status: true, message: "Unfollowed" };
   } catch (error) {
     return { status: false, error: (error as Error).message };
+  }
+}
+
+export async function updateUserProfile({
+  userId,
+  name,
+  username,
+  location,
+  bio,
+  profileImage,
+  coverImage,
+}: {
+  userId: string;
+  name?: string;
+  username?: string;
+  location?: string;
+  bio?: string;
+  profileImage?: string;
+  coverImage?: string;
+}) {
+  try {
+    await connectToDatabase();
+
+    if (username) {
+      const isExistingUsername = await User.findOne({ username });
+      if (isExistingUsername && isExistingUsername._id.toString() !== userId) {
+        return { status: false, error: "Username already exists" };
+      }
+    }
+
+    const updateFields: any = { userId };
+    if (name) updateFields.name = name;
+    if (username) updateFields.username = username;
+    if (location) updateFields.location = location;
+    if (bio) updateFields.bio = bio;
+    if (profileImage) updateFields.profileImage = profileImage;
+    if (coverImage) updateFields.coverImage = coverImage;
+
+    console.log('Update field',updateFields)
+
+    await User.findByIdAndUpdate(userId, updateFields, { new: true });
+
+    return { status: true, message: "User updated successfully" };
+  } catch (error) {
+    return { status: false, error: error instanceof Error ? error.message : "Something went wrong" };
   }
 }

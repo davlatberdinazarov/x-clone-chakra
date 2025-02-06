@@ -26,7 +26,7 @@ const ProfileHero = ({ user }: { user: IUser }) => {
       <div className="absolute -bottom-16 left-4">
         <Avatar.Root size={"2xl"} className="w-32 h-32">
           <Avatar.Fallback className=" text-6xl">{user.name[0]}</Avatar.Fallback>
-          <Avatar.Image src={user.profileImage} />
+          <Avatar.Image className="h-full w-full object-cover" src={user.profileImage} />
         </Avatar.Root>
       </div>
     </div>
