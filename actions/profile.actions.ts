@@ -167,3 +167,35 @@ export async function updateUserProfile({
     return { status: false, error: error instanceof Error ? error.message : "Something went wrong" };
   }
 }
+
+
+export const getFollowingOrFollowers = async ({
+    userId,
+    state,
+  }: {
+    userId: string;
+    state: string;
+  }) => {
+    try {
+      await connectToDatabase();
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        throw new Error("User not found");
+      }
+  
+      let result;
+  
+      if (state === "following") {
+        result = await User.find({ _id: { $in: user.following } });
+      } else if (state === "followers") {
+        result = await User.find({ _id: { $in: user.followers } });
+      } else {
+        throw new Error("Invalid state provided");
+      }
+  
+      return { status: true, data: JSON.parse(JSON.stringify(result)) };
+    } catch (error) {
+      return { status: false, error: error instanceof Error ? error.message : "Something went wrong" };
+    }
+  };
