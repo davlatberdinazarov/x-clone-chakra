@@ -47,7 +47,7 @@ const PostItem = ({ post, user, setPosts }: Props) => {
     try {
       setIsLoading(true);
       if (post.hasLiked) {
-        await unlikePost(post._id, user._id);
+        await unlikePost(post._id);
   
         const updatedPosts = {
           ...post,
@@ -63,7 +63,7 @@ const PostItem = ({ post, user, setPosts }: Props) => {
           type: "success",
         });
       } else {
-        await likePost(post._id, user._id);
+        await likePost(post._id);
   
         const updatedPosts = {
           ...post,

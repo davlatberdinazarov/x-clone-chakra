@@ -47,10 +47,7 @@ export async function getPosts(limit: number): Promise<IPost[]> {
 
     revalidatePath("/posts"); // Asosiy sahifani yangilash
 
-    console.log("Session user ID:", session?.currentUser?._id);
-    console.log("Post likes:", posts);
-
-    return posts.map((post: any) =>
+    let filteredPosts = posts.map((post: any) =>
       JSON.parse(
         JSON.stringify({
           _id: post._id.toString(),
@@ -64,14 +61,18 @@ export async function getPosts(limit: number): Promise<IPost[]> {
             profileImage: post.user.profileImage,
             email: post.user.email,
           },
+          postLikes: post?.likes,
           likes: post.likes?.length || 0,
-          comments: post.comments?.length || 0,
-          hasLiked: session?.currentUser?._id
-          ? post.likes.includes(session.currentUser._id)
-          : false,
+          comments: post.comments,
+          hasLiked: post?.likes.some((like: any) => like._id == session?.currentUser?._id.toString()),
         })
       )
     ) as IPost[];
+
+    console.log(session?.currentUser?._id);
+    console.log('✅✅ FilteredPosts', filteredPosts);
+
+    return filteredPosts
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);
@@ -174,6 +175,8 @@ export async function getPostComments(
           }))
         : [];
 
+
+
     console.log("🚀 FilteredComments", filteredComments);
 
     return {
@@ -186,7 +189,7 @@ export async function getPostComments(
   }
 }
 
-export async function likePost(postId: string, userId: string) {
+export async function likePost(postId: string) {
   try {
     await connectToDatabase();
     
@@ -195,11 +198,14 @@ export async function likePost(postId: string, userId: string) {
       return { error: "Post not found" };
     }
 
-    if (post.likes.includes(userId)) {
+ 
+    const session = await getServerSession(authOptions);
+
+    if (post.likes.includes(session?.currentUser?._id)) {
       return { error: "User already liked this post" };
     }
 
-    await Post.findByIdAndUpdate(postId, { $push: { likes: userId } });
+    await Post.findByIdAndUpdate(postId, { $push: { likes: session?.currentUser?._id } });
 
     revalidatePath("/posts");
     return { success: true };
@@ -208,7 +214,7 @@ export async function likePost(postId: string, userId: string) {
   }
 }
 
-export async function unlikePost(postId: string, userId: string) {
+export async function unlikePost(postId: string) {
   try {
     await connectToDatabase();
     
@@ -217,11 +223,15 @@ export async function unlikePost(postId: string, userId: string) {
       return { error: "Post not found" };
     }
 
-    if (!post.likes.includes(userId)) {
+
+
+    const session = await getServerSession(authOptions);
+
+    if (!post.likes.includes(session?.currentUser?._id)) {
       return { error: "User has not liked this post" };
     }
 
-    await Post.findByIdAndUpdate(postId, { $pull: { likes: userId } });
+    await Post.findByIdAndUpdate(postId, { $pull: { likes: session?.currentUser?._id } });
 
     revalidatePath("/posts");
     return { success: true };
