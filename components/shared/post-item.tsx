@@ -6,10 +6,11 @@ import { sliceText } from "@/lib/utils";
 import { formatDistanceToNowStrict } from "date-fns";
 import { AiFillDelete, AiOutlineMessage } from "react-icons/ai";
 import { FaHeart } from "react-icons/fa";
-import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { Avatar } from "../ui/avatar";
 import { toaster } from "../ui/toaster";
+import { useRouter } from "next/navigation";
+import { deletePost, likePost, unlikePost } from "@/actions/post.actions";
 
 interface Props {
   post: IPost;
@@ -19,24 +20,79 @@ interface Props {
 
 const PostItem = ({ post, user, setPosts }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
+  let router = useRouter();
 
-  const onDelete = async () => {
+  const onDelete = async (e: any) => {
+    e.stopPropagation();
     try {
       setIsLoading(true);
-      await axios.delete(`/api/posts`, {
-        data: {
-          postId: post._id,
-        },
-      });
+      await deletePost(post._id);
       setPosts((prev) => prev.filter((p) => p._id !== post._id));
+      setIsLoading(false);
+      toaster.create({
+        description: "Post deleted successfully",
+        type: "success",
+      });
+    } catch (error) {
+      setIsLoading(false);
+      toaster.create({
+        description: "Something went wrong while deleting the post",
+        type: "error",
+      });
+    }
+  };
+  
+  const onLike = async (e: any) => {
+    e.stopPropagation();
+    try {
+      setIsLoading(true);
+      if (post.hasLiked) {
+        await unlikePost(post._id, user._id);
+  
+        const updatedPosts = {
+          ...post,
+          hasLiked: false,
+          likes: post.likes - 1,
+        };
+  
+        setPosts((prev) =>
+          prev.map((p) => (p._id === post._id ? updatedPosts : p))
+        );
+        toaster.create({
+          description: "You unliked this post.",
+          type: "success",
+        });
+      } else {
+        await likePost(post._id, user._id);
+  
+        const updatedPosts = {
+          ...post,
+          hasLiked: true,
+          likes: post.likes + 1,
+        };
+  
+        setPosts((prev) =>
+          prev.map((p) => (p._id === post._id ? updatedPosts : p))
+        );
+        toaster.create({
+          description: "You liked this post.",
+          type: "success",
+        });
+      }
+  
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      return toaster.create({
-        description: "File saved successfully",
-        type: "info",
+      toaster.create({
+        description: "Something went wrong while updating the like",
+        type: "error",
       });
     }
+  };
+  
+
+  const goToPost = () => {
+    router.push(`/posts/${post._id}`);
   };
 
   return (
@@ -48,7 +104,7 @@ const PostItem = ({ post, user, setPosts }: Props) => {
           </div>
         </div>
       )}
-      <div className="flex flex-row items-center gap-3">
+      <div onClick={goToPost} className="flex flex-row items-center gap-3">
         <Avatar src={post.user.profileImage} name={post.user.name[0]} />
 
         <div>
@@ -77,8 +133,8 @@ const PostItem = ({ post, user, setPosts }: Props) => {
             <div
               className={`flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-red-500`}
             >
-              <FaHeart size={20} color={"red"} />
-              <p>{Array.isArray(post.likes) ? post.likes.length : 0}</p>
+              <FaHeart size={20} onClick={onLike} color={post.hasLiked ? "red" : ""}  />
+              <p>{post.likes || 0}</p>
             </div>
 
             {post.user._id === user._id && (

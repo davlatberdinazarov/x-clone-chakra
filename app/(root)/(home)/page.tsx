@@ -9,18 +9,21 @@ import { IPost } from "@/types";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { getPosts } from "@/app/api/post/actions"; // ✅ Server Actions import qildik
+import { usePostStore } from "@/store/renders";
+import { getPosts } from "@/actions/post.actions";
 
 export default function Home() {
   const { data: session, status }: any = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState<IPost[]>([]);
 
+  const { postCount } = usePostStore();
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const data = await getPosts(10); // ✅ Axios o‘rniga server action ishlatyapmiz
+        const data = await getPosts(10) as IPost[]; // ✅ Axios o‘rniga server action ishlatyapmiz
         setPosts(data);
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -30,13 +33,13 @@ export default function Home() {
     };
 
     fetchPosts();
-  }, []);
+  }, [postCount]);
 
-  console.log(posts);
+  console.log('POSTS', posts);
 
   return (
     <div>
-      <Header label="Home" isBack />
+      <Header label="Home" />
       {isLoading || status === "loading" ? (
         <div className="flex justify-center items-center h-24">
           <Loader2 className="animate-spin text-sky-500" />
@@ -53,9 +56,6 @@ export default function Home() {
           ))}
         </>
       )}
-
-      <Demo />
-      <LogoutButton />
     </div>
   );
 }

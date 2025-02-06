@@ -4,34 +4,63 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import { Avatar } from "../ui/avatar";
 import { IPost, IUser } from "@/types";
 import Button from "../ui/button";
-import { createPost } from "@/app/api/post/actions";
+import { usePostStore } from "@/store/renders";
+import { createPost } from "@/actions/post.actions";
+import { createComment } from "@/actions/comment.actions";
 
 interface Props {
   placeholder: string;
   user: IUser;
   setPosts: Dispatch<SetStateAction<IPost[]>>;
+  postId?: string;
   isComment?: boolean;
 }
 
-export default function Form({ placeholder, user, setPosts, isComment }: Props) {
+export default function Form({
+  placeholder,
+  user,
+  setPosts,
+  isComment,
+  postId,
+}: Props) {
   const [body, setBody] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { increment } = usePostStore();
 
   const onSubmit = async () => {
-    if (!body.trim()) return; // Bo'sh post yaratishdan saqlanish
+    if (!body.trim()) return;
 
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      
-      // ✅ Server action orqali post yaratish
-      const newPost = await createPost({ body, userId: user._id });
-      
-      // ✅ Yangi postni setPosts ga qo'shamiz
-      setPosts((prev) => [newPost, ...prev]);
-      
+      if (isComment) {
+        if (!postId) {
+          console.error("Post ID is required to create a comment.");
+          return;
+        }
+        const response = await createComment({ body, postId });
+        console.log('Create Comment post: ',response);
+        if (response?.status === 200 && response.data) {
+          const newComment = {
+            ...response.data,
+            user,
+            likes: 0,
+            hasLiked: false,
+          };
+          setPosts((prev) => { 
+            console.log('Previous posts:', prev); 
+            return [newComment, ...prev]
+          });
+        }
+      } else {
+        increment();
+        const newPost = await createPost({ body, userId: user._id });
+        if (newPost) {
+          setPosts((prev) => [newPost, ...prev]);
+        }
+      }
       setBody("");
     } catch (error) {
-      console.error("Post yaratishda xatolik:", error);
+      console.error("Xatolik yuz berdi:", error);
     } finally {
       setIsLoading(false);
     }
@@ -49,14 +78,15 @@ export default function Form({ placeholder, user, setPosts, isComment }: Props) 
             disabled={isLoading}
             value={body}
             onChange={(e) => setBody(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && onSubmit()}
           ></textarea>
           <hr className="opacity-0 peer-focus:opacity-100 h-[1px] w-full border-neutral-800 transition" />
 
           <div className="mt-4 flex flex-row justify-end">
             <Button
               classNames="px-8"
-              disabled={isLoading || !body}
-              onClick={onSubmit} // ✅ Tugmani bosganda server action chaqiriladi
+              disabled={isLoading || !body.trim()}
+              onClick={onSubmit}
             >
               {isComment ? "Reply" : "Post"}
             </Button>

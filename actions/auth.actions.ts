@@ -4,6 +4,39 @@ import User from "@/database/user.model";
 import { connectToDatabase } from "@/lib/mongoose";
 import bcrypt from "bcrypt";
 
+export async function loginUser(formData: FormData) {
+    try {
+        await connectToDatabase();
+
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+
+        if (!email || !password) {
+            return JSON.parse(JSON.stringify({ success: false, message: "Email va parol kiritilishi shart" }));
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return JSON.parse(JSON.stringify({ success: false, message: "Foydalanuvchi topilmadi" }));
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return JSON.parse(JSON.stringify({ success: false, message: "Noto‘g‘ri email yoki parol" }));
+        }
+
+        return { 
+            success: true, 
+            message: "Login muvaffaqiyatli", 
+            user: JSON.parse(JSON.stringify({ id: user._id, name: user.name, email: user.email, image: user.image }))
+        };
+    } catch (error) {
+        console.error("Login xatosi:", error);
+        return { success: false, message: "Server xatosi" };
+    }
+}
+
+
 export async function registerUser(formData: FormData) {
     try {
         await connectToDatabase();
@@ -25,13 +58,13 @@ export async function registerUser(formData: FormData) {
                         : "Username is already taken",
                 };
             }
-            return { success: true, message: "Proceed to next step" };
+            return JSON.parse(JSON.stringify({ success: true, message: "Proceed to next step" }));
         }
 
         // Step 2: Barcha ma'lumotlarni tekshirish va foydalanuvchi yaratish
         if (step === 2) {
             if (!email || !name || !username || !password) {
-                return { success: false, message: "All fields are required" };
+                return JSON.parse(JSON.stringify({ success: false, message: "All fields are required" }));
             }
 
             const isExistingUser = await User.findOne({ username });
@@ -48,12 +81,12 @@ export async function registerUser(formData: FormData) {
 
             const user = await User.create({ email, name, username, password: hashedPassword });
 
-            return { success: true, message: "User created successfully", user: user.toObject() };
+            return JSON.parse(JSON.stringify({ success: true, message: "User created successfully", user: user.toObject() }));
         }
 
-        return { success: false, message: "Invalid step" };
+        return JSON.parse(JSON.stringify({ success: false, message: "Invalid step" }));
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Something went wrong";
-        return { success: false, message: errorMessage };
+        return JSON.parse(JSON.stringify({ success: false, message: errorMessage }));
     }
 }

@@ -9,7 +9,7 @@ import { Field } from "@/components/ui/field";
 import Button from "../ui/button";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";  // NextAuth.js import
-import { registerUser } from "@/app/api/auth/register";
+import { registerUser } from "@/actions/auth.actions";
 
 export default function RegisterModal() {
   const [step, setStep] = useState(1);
@@ -215,11 +215,9 @@ function RegisterStep2({ data }: { data: { name: string; email: string } }) {
   
         if (!response.success) {
           setErrorMessage(response.message || "Registration failed");
-          console.log(response.message);
           return;
         }
   
-        console.log("Registration successful", response);
   
         // Foydalanuvchini NextAuth bilan tizimga kirgizish
         const signInResponse = await signIn("credentials", {
@@ -232,7 +230,6 @@ function RegisterStep2({ data }: { data: { name: string; email: string } }) {
   
         if (signInResponse?.error) {
           setErrorMessage("Failed to log in after registration.");
-          console.log(signInResponse.error);
         } else {
           // Successful login
           location.reload(); // Reload the page after successful registration and login

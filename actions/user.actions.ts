@@ -13,7 +13,7 @@ export async function fetchUsers(limit: number) {
       .limit(Number(limit))
       .sort({ createdAt: -1 });
 
-    return users;
+    return JSON.parse(JSON.stringify(users));
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);

@@ -7,8 +7,9 @@ import useRegisterModal from "@/hooks/useRegisterModal";
 import { signIn } from "next-auth/react";
 import { Input, Stack, Text } from "@chakra-ui/react";
 import Button from "../ui/button";
-import { loginUser } from "@/app/api/auth/login";
+
 import Modal from "../ui/modal";
+import { loginUser } from "@/actions/auth.actions";
 
 export default function LoginModal() {
   const router = useRouter();

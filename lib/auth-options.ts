@@ -46,6 +46,7 @@ export const authOptions: AuthOptions = {
       if (!isExistingUser) {
         // Create a new user if it doesn't exist
         const newUser = await User.create({
+          id: session.user.id,
           email: session.user.email,
           name: session.user.name,
           profileImage: session.user.image,

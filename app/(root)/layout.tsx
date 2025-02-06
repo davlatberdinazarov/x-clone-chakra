@@ -6,7 +6,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import Sidebar from "@/components/sidebar/sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import Toast from "@/components/toast";
 import FollowBar from "@/components/shared/follow-bar";
 
 
@@ -17,8 +16,6 @@ interface Props {
 const Layout = async ({ children }: Props) => {
   const session: any = await getServerSession(authOptions);
 
-  console.log("Session:", session);
-
   if (!session) {
     return (
       <div className="container h-screen mx-auto max-w-7xl">
@@ -28,7 +25,7 @@ const Layout = async ({ children }: Props) => {
   }
 
   return (
-    <div suppressHydrationWarning className="lg:container h-screen mx-auto lg:max-w-7xl">
+    <div suppressHydrationWarning={true} className="lg:container h-screen mx-auto lg:max-w-7xl">
       <div className="flex">
         <Sidebar user={JSON.parse(JSON.stringify(session.currentUser))} />
         <div className="flex flex-1 border-x-[1px] border-neutral-800 lg:mx-4 ml-1">
@@ -46,7 +43,6 @@ const Layout = async ({ children }: Props) => {
             />
             {children}
             <Toaster />
-            <Toast/>
           </div>
         </div>
         <FollowBar />

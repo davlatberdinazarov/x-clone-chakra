@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning>
+    <html suppressHydrationWarning={true}>
       <body className={inter.className}>
         <Provider>
           <SessionProviderWrapper> {/* ✅ SessionProvider ni Client Component ichiga oldik */}

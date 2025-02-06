@@ -1,6 +1,5 @@
 "use client";
-
-import { fetchUsers } from "@/app/api/users/actions";
+import { fetchUsers } from "@/actions/user.actions";
 import { useEffect, useState } from "react";
 
 const useUsers = (limit: number) => {

@@ -10,9 +10,7 @@ import User from "./user";
 
 const FollowBar = () => {
   const {users, isLoading, isError} = useUsers(5);
-
-  console.log(users, isLoading, isError);
-
+  
   return (
     <div className="py-4 hidden lg:block w-[266px]">
       <div className="bg-neutral-800 rounded-xl ">

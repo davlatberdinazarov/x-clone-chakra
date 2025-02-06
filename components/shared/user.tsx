@@ -5,7 +5,6 @@ import { Avatar } from "../ui/avatar";
 import { IUser } from "@/types";
 
 export default function User({ user }: { user: IUser}) {
-    console.log(user);
   return (
     <div className="flex gap-3 items-center justify-between cursor-pointer hover:bg-slate-300 hover:bg-opacity-10 transition py-2 px-3 rounded-md">
       <div className="flex gap-2 cursor-pointer">
