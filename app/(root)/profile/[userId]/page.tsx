@@ -1,32 +1,40 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getUserById } from "@/actions/profile.actions";
 import ProfileBio from "@/components/profile/profile-bio";
 import ProfileHero from "@/components/profile/profile-hero";
 import Header from "@/components/shared/header";
 import PostFeed from "@/components/shared/post-feed";
-import { authOptions } from "@/lib/auth-options";
-import { getServerSession } from "next-auth";
-import React from "react";
+import { getSession } from "next-auth/react";
 
-// Adjusted Page component
-const Page = async ({ params }: { params: { userId: string } }) => {
-  const session: any = await getServerSession(authOptions);
-  const { userId } = params; // No need to await params
+const Page = () => {
+  const { userId } = useParams<{ userId: string }>(); // useParams bilan olish
+  const [user, setUser] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
 
-  // Fetch user data
-  const user = await getUserById(userId);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!userId) return;
+      const fetchedUser = await getUserById(userId);
+      setUser(fetchedUser);
+
+      const sessionData = await getSession();
+      setSession(sessionData);
+    };
+
+    fetchData();
+  }, [userId]);
+
+  if (!user) return <div>Loading...</div>;
 
   return (
     <>
       <Header label={user.name} isBack />
-      <ProfileHero user={JSON.parse(JSON.stringify(user))} />
-      <ProfileBio
-        user={JSON.parse(JSON.stringify(user))}
-        userId={JSON.parse(JSON.stringify(session)).currentUser._id}
-      />
-      <PostFeed
-        userId={userId}
-        user={JSON.parse(JSON.stringify(session.currentUser))}
-      />
+      <ProfileHero user={user} />
+      <ProfileBio user={user} userId={session?.user?.id} />
+      <PostFeed userId={userId} user={session?.user} />
     </>
   );
 };
