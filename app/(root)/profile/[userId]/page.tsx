@@ -1,40 +1,53 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { getUserById } from "@/actions/profile.actions";
 import ProfileBio from "@/components/profile/profile-bio";
 import ProfileHero from "@/components/profile/profile-hero";
 import Header from "@/components/shared/header";
 import PostFeed from "@/components/shared/post-feed";
-import { getSession } from "next-auth/react";
+import { Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 const Page = () => {
-  const { userId } = useParams<{ userId: string }>(); // useParams bilan olish
+  const params = useParams<{ userId: string }>();
+  const { data: session, status }: any = useSession();
   const [user, setUser] = useState<any>(null);
-  const [session, setSession] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!userId) return;
-      const fetchedUser = await getUserById(userId);
-      setUser(fetchedUser);
+    if (!params.userId) return;
 
-      const sessionData = await getSession();
-      setSession(sessionData);
+    const fetchUser = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getUserById(params.userId);
+        setUser(response);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchData();
-  }, [userId]);
+    fetchUser();
+  }, [params.userId]);
 
-  if (!user) return <div>Loading...</div>;
+  if (isLoading || status === "loading") {
+    return (
+      <div className="flex justify-center items-center h-24">
+        <Loader2 className="animate-spin text-sky-500" />
+      </div>
+    );
+  }
 
   return (
     <>
-      <Header label={user.name} isBack />
+      <Header label={user?.name || "Profile"} isBack />
       <ProfileHero user={user} />
-      <ProfileBio user={user} userId={session?.user?.id} />
-      <PostFeed userId={userId} user={session?.user} />
+      <ProfileBio user={user} userId={session?.currentUser?._id} />
+      <PostFeed userId={params.userId} user={session?.currentUser} />
     </>
   );
 };
