@@ -29,7 +29,7 @@ const Page = () => {
   };
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value.toLowerCase();
-    if (text && text.length > 2) {
+    if (text && text?.length > 2) {
       setIsLoading(true);
       const response = await searchUsers(text);
       
@@ -99,11 +99,6 @@ const Page = () => {
                   </div>
                 </Link>
               ))}
-            {/* {users.length === 0 && (
-              <div className="text-neutral-600 text-center p-6 text-xl">
-                No users found
-              </div>
-            )} */}
           </div>
         </>
       )}

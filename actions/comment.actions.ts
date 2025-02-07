@@ -1,7 +1,9 @@
 "use server";
 
 import Comment from "@/database/comment.model";
+import Notification from "@/database/notification.model";
 import Post from "@/database/post.model";
+import User from "@/database/user.model";
 import { authOptions } from "@/lib/auth-options";
 import { connectToDatabase } from "@/lib/mongoose";
 import { getServerSession } from "next-auth";
@@ -20,10 +22,21 @@ export async function createComment({
     const session = await getServerSession(authOptions);
     if (!session?.user) return { message: "Unauthorized", status: 401 };
 
+    const post = await Post.findById(postId);
+
     const userId = session.currentUser?._id; // currentUser ishlatilmoqda
 
     const comment = await Comment.create({ body, post: postId, user: userId });
     await Post.findByIdAndUpdate(postId, { $push: { comments: comment._id } });
+
+    await Notification.create({
+      user: String(post.user),
+      body: "Someone replied on your post!",
+    });
+    await User.findOneAndUpdate(
+      { _id: String(post.user) },
+      { $set: { hasNewNotifications: true } }
+    );
 
     return JSON.parse(JSON.stringify({ status: 200, data: comment }));
   } catch (error) {

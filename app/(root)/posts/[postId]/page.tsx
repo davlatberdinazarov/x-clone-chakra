@@ -56,7 +56,7 @@ const Page = () => {
   };
 
   useEffect(() => {
-    if (!params.postId || post || comments.length > 0) return; // Avoid re-fetching if data is already present
+    if (!params.postId || post || comments?.length > 0) return; // Avoid re-fetching if data is already present
     getPost();
     getComments();
   }, []);

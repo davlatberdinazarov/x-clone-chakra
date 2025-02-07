@@ -10,6 +10,7 @@ import SidebarPostButton from './sidebar-post-button'
 import SidebarAccount from './sidebar-accaount'
 
 const Sidebar = ({ user }: { user: IUser }) => {
+	console.log(user)
 	const sidebarItems = [
 		{ label: 'Home', path: '/', icon: Home },
 		{ label: 'Notifications', path: `/notifications/${user?._id}`, icon: Bell, notification: user?.hasNewNotifications },

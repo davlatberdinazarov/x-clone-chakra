@@ -40,11 +40,9 @@ export const authOptions: AuthOptions = {
     async session({ session }: any) {
       await connectToDatabase();
 
-      // Check if the user exists in the database
       const isExistingUser = await User.findOne({ email: session.user.email });
 
       if (!isExistingUser) {
-        // Create a new user if it doesn't exist
         const newUser = await User.create({
           id: session.user.id,
           email: session.user.email,
@@ -52,24 +50,26 @@ export const authOptions: AuthOptions = {
           profileImage: session.user.image,
         });
 
-        // Add the new user with id as a string to the session
         session.currentUser = {
           ...newUser.toObject(),
-          id: newUser._id.toString(), // Convert ObjectId to string here
+          id: newUser._id.toString(),
         };
       } else {
-        // If the user exists, assign it to session and convert id to string
         session.currentUser = {
           ...isExistingUser.toObject(),
-          id: isExistingUser._id.toString(), // Convert ObjectId to string
+          id: isExistingUser._id.toString(),
         };
       }
 
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      return baseUrl; // 🔥 Har doim bosh sahifaga (`/`) yo‘naltirish
     },
   },
   session: { strategy: "jwt" },
   jwt: { secret: process.env.NEXTAUTH_JWT_SECRET! },
   secret: process.env.NEXTAUTH_SECRET!,
 };
+
     

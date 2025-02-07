@@ -8,6 +8,7 @@ import { connectToDatabase } from "@/lib/mongoose";
 import { IPost } from "@/types";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
+import Notification from "@/database/notification.model";
 
 interface CreatePostParams {
   body: string;
@@ -150,7 +151,7 @@ export async function getPostComments(
 
     // Check if comments exist and map over them
     const filteredComments =
-      post.comments && post.comments.length > 0
+      post.comments && post.comments?.length > 0
         ? post.comments.map((item: any) => ({
             body: item.body,
             createdAt: item.createdAt,
@@ -163,7 +164,7 @@ export async function getPostComments(
                   email: item.user.email || "",
                 }
               : {},
-            likes: item.likes.length,
+            likes: item.likes?.length,
             hasLiked: session?.currentUser?._id
               ? item.likes.includes(session.currentUser._id)
               : false,
@@ -198,6 +199,17 @@ export async function likePost(postId: string) {
     }
 
     await Post.findByIdAndUpdate(postId, { $push: { likes: session?.currentUser?._id } });
+
+    
+    await Notification.create({
+      user: String(post.user),
+      body: "Someone liked your post!",
+    });
+    await User.findOneAndUpdate(
+      { _id: String(post.user) },
+      { $set: { hasNewNotifications: true } }
+    );
+    console.log('someone liked your post');
 
     revalidatePath("/posts");
     return { success: true };

@@ -22,7 +22,7 @@ export default function LoginModal() {
   const [isLoading, setIsLoading] = useState(false);
 
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPassword = (password: string) => password.length >= 6;
+  const isValidPassword = (password: string) => password?.length >= 6;
 
   const onSubmit = async () => {
     setErrorMessage("");

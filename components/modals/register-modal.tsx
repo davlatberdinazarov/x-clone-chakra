@@ -184,7 +184,7 @@ function RegisterStep2({ data }: { data: { name: string; email: string } }) {
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  const isValidPassword = (password: string) => password.length >= 6;
+  const isValidPassword = (password: string) => password?.length >= 6;
 
 
 

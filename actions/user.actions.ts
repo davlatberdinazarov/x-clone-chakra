@@ -35,7 +35,7 @@ export async function searchUsers(query: string) {
       ],
     }).select("name username _id profileImage email");
 
-    if (!users.length) {
+    if (!users?.length) {
       return { status: false, error: "User not found" };
     }
 

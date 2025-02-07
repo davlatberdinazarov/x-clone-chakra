@@ -1,6 +1,7 @@
 
 "use server";
 
+import Notification from "@/database/notification.model";
 import Post from "@/database/post.model";
 import User from "@/database/user.model";
 import { authOptions } from "@/lib/auth-options";
@@ -31,7 +32,7 @@ export async function getUserById(userId: string) {
       isFollowing: user.followers?.includes(currentUser._id) || false,
     };
 
-    return filteredUser;
+    return JSON.parse(JSON.stringify(filteredUser));
   } catch (error) {
     throw error;
   }
@@ -74,7 +75,7 @@ export async function getUserPosts(userId: string, limit?: number) {
         ) || false,
     }));
 
-    return { status: true, data: filteredPosts };
+    return { status: true, data: JSON.parse(JSON.stringify(filteredPosts)) };
   } catch (error) {
     return {
       status: false,
@@ -94,6 +95,15 @@ export async function followUser({ userId, currentUserId } : {userId: string, cu
     await User.findByIdAndUpdate(currentUserId, {
       $push: { following: userId },
     });
+
+    await Notification.create({
+      user: userId,
+      body: "Someone followed you!",
+    });
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: { hasNewNotifications: true } }
+    );
 
     revalidatePath("/profile/" + userId); // Profilni yangilash
 
@@ -157,8 +167,6 @@ export async function updateUserProfile({
     if (bio) updateFields.bio = bio;
     if (profileImage) updateFields.profileImage = profileImage;
     if (coverImage) updateFields.coverImage = coverImage;
-
-    console.log('Update field',updateFields)
 
     await User.findByIdAndUpdate(userId, updateFields, { new: true });
 

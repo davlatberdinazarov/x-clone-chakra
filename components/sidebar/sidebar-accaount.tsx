@@ -75,7 +75,7 @@ const SidebarAccount = () => {
               className="font-bold text-white text-lg rounded-xl cursor-pointer hover:bg-slate-300 hover:bg-opacity-10 p-4 transition"
               onClick={() => signOut()}
             >
-              Log out @userhandle
+              Log out @{sliceText(data?.currentUser?.username, 16) || "user@twitter"}
             </div>
           </PopoverBody>
         </PopoverContent>
