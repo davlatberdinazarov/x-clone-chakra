@@ -1,4 +1,3 @@
-
 import { getUserById } from "@/actions/profile.actions";
 import ProfileBio from "@/components/profile/profile-bio";
 import ProfileHero from "@/components/profile/profile-hero";
@@ -8,9 +7,12 @@ import { authOptions } from "@/lib/auth-options";
 import { getServerSession } from "next-auth";
 import React from "react";
 
+// Adjusted Page component
 const Page = async ({ params }: { params: { userId: string } }) => {
   const session: any = await getServerSession(authOptions);
-  const { userId } = await params; // Await params to ensure it's resolved
+  const { userId } = params; // No need to await params
+
+  // Fetch user data
   const user = await getUserById(userId);
 
   return (
