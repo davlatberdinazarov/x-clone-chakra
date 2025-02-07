@@ -35,7 +35,11 @@ export async function searchUsers(query: string) {
       ],
     }).select("name username _id profileImage email");
 
-    return { status: true, data: users };
+    if (!users.length) {
+      return { status: false, error: "User not found" };
+    }
+
+    return { status: true, data: JSON.parse(JSON.stringify(users)) };
   } catch (error) {
     return { status: false, error: error instanceof Error ? error.message : "Something went wrong" };
   }
