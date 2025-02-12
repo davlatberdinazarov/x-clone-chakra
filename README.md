@@ -4,20 +4,20 @@ Bu loyiha Next.js 15, Server Actions, va Chakra UI asosida qurilgan zamonaviy e-
 🚀 Loyihani ishga tushirish
 1️⃣ Klonni yuklab oling
 
-git clone https://github.com/username/project-name.git
+git clone https://github.com/davlatberdinazarov/x-clone-chakra.git
 cd project-name
 2️⃣ Kerakli paketlarni o‘rnatish
 
 npm install  
-# yoki  
+# 
 yarn install  
-# yoki  
+# 
 pnpm install
 3️⃣ Development serverni ishga tushirish
 
 npm run dev  
-# yoki  
+# 
 yarn dev  
-# yoki  
+# 
 pnpm dev
 Server http://localhost:3000 manzilida ishga tushadi. Brauzer orqali ochib, ilovani ko‘rishingiz mumkin.
